@@ -1,4 +1,10 @@
+
 # Playnite Controller Compatibility Plugin
+
+<p align="center">
+  <img src="in-action01.png" alt="Controller Compatibility Plugin in action" width="600">
+  <img src="in-action02.png" alt="Controller Compatibility Plugin overlays" width="600">
+</p>
 
 A Playnite plugin that provides controller compatibility detection and management, similar to Steam's controller compatibility system.
 
