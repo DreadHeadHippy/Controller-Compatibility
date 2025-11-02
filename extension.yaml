@@ -1,0 +1,13 @@
+Id: playnite-controller-compatibility-plugin
+
+Name: Controller Compatibility
+Author: DreadHeadHippy
+Version: 1.0.1
+Module: ControllerCompatibility.dll
+Icon: controller_overlay_icon.png
+Type: GenericPlugin
+Links:
+    - Name: GitHub Repository
+      Url: https://github.com/DreadHeadHippy/Controller-Compatibility
+    - Name: Issues & Support
+      Url: https://github.com/DreadHeadHippy/Controller-Compatibility/issues

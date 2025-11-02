@@ -1,0 +1,20 @@
+<UserControl x:Class="ControllerCompatibility.ControllerCompatibilitySettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="300" d:DesignWidth="400">
+    <StackPanel Margin="10">
+        <TextBlock Text="Controller Compatibility Settings" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+        <CheckBox x:Name="ShowWarningsCheckBox" Content="Show compatibility warnings on game launch" Margin="0,0,0,5"/>
+        <CheckBox x:Name="AutoDetectCheckBox" Content="Automatically detect controller compatibility" Margin="0,0,0,5"/>
+        <TextBlock Text="Controller Detection:" FontWeight="Bold" Margin="0,10,0,5"/>
+        <ComboBox x:Name="DetectionMethodComboBox" Margin="0,0,0,10">
+            <ComboBoxItem Content="XInput (Xbox controllers)" IsSelected="True"/>
+            <ComboBoxItem Content="DirectInput (all controllers)"/>
+            <ComboBoxItem Content="Both"/>
+        </ComboBox>
+        <Button x:Name="RefreshControllersButton" Content="Refresh Controllers" Margin="0,10,0,0" Padding="10,5"/>
+    </StackPanel>
+</UserControl>

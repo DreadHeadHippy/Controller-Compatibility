@@ -1,0 +1,33 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+    <!-- Background circle -->
+    <circle cx="32" cy="32" r="30" fill="#4CAF50" stroke="#2E7D32" stroke-width="2" />
+
+    <!-- Stylized controller shape -->
+    <g transform="translate(32,32)">
+        <!-- Controller body -->
+        <rect x="-12" y="-8" width="24" height="16" rx="3" fill="#FFFFFF" stroke="#333"
+            stroke-width="1" />
+
+        <!-- Left analog stick -->
+        <circle cx="-6" cy="0" r="2" fill="#666" />
+        <circle cx="-6" cy="0" r="1" fill="#333" />
+
+        <!-- Right analog stick -->
+        <circle cx="6" cy="0" r="2" fill="#666" />
+        <circle cx="6" cy="0" r="1" fill="#333" />
+
+        <!-- D-pad -->
+        <rect x="-10" y="-4" width="1.5" height="8" fill="#666" />
+        <rect x="-12" y="-2" width="8" height="1.5" fill="#666" />
+
+        <!-- Face buttons -->
+        <circle cx="10" cy="-4" r="1.5" fill="#FF5722" />
+        <circle cx="13" cy="0" r="1.5" fill="#2196F3" />
+        <circle cx="10" cy="4" r="1.5" fill="#4CAF50" />
+        <circle cx="7" cy="0" r="1.5" fill="#FFC107" />
+    </g>
+
+    <!-- Large checkmark -->
+    <path d="M45 20 L50 25 L58 15" stroke="#FFFFFF" stroke-width="4" fill="none"
+        stroke-linecap="round" stroke-linejoin="round" />
+</svg>
