@@ -22,16 +22,6 @@ A Playnite plugin that provides controller compatibility detection and managemen
   - ❌ **No Controller Support** - Keyboard/mouse only
   - 🔧 **Community Configurations** - User-created controller configs available
 
-### 💡 Smart Recommendations
-- Suggests best input method for each game
-- Warns about games requiring keyboard/mouse
-- Recommends community controller configurations
-
-### ⚙️ Configuration Management
-- Store and share controller configurations
-- Import/export controller profiles  
-- Community-driven configuration database
-
 ## Installation & Testing
 
 ### Quick Test Build
@@ -45,7 +35,7 @@ A Playnite plugin that provides controller compatibility detection and managemen
 
 ### What You'll See
 - **Controller Status**: Top panel shows connected controllers
-- **Game Overlays**: Look for colored badges on game tiles in your library (bottom-right corner)
+- **Game Overlays**: Look for colored badges on game tiles in your library (top-right corner if in 'grid view')
 - **Context Menus**: Right-click games for compatibility options
 - **Visual Feedback**: Badges appear/disappear based on controller connections
 
