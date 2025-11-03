@@ -1,4 +1,3 @@
-
 # Playnite Controller Compatibility Plugin
 
 <p align="center">
@@ -21,22 +20,30 @@ A Playnite plugin that provides controller compatibility detection and managemen
   - 🎮 **Partial Controller Support** - Some limitations or workarounds needed
   - ❌ **No Controller Support** - Keyboard/mouse only
 
-## Installation & Testing
 
-### Quick Test Build
-1. Run `build.bat` to compile the plugin
+## Installation
+
+### Recommended (Easy)
+1. Download the latest `.pext` file from [Releases](https://github.com/DreadHeadHippy/Controller-Compatibility/releases).
+2. Open Playnite.
+3. Go to **Extensions → Install extension**.
+4. Select the downloaded `.pext` file.
+5. Restart Playnite.
+
+### Advanced (Manual Build)
+1. Run `build.bat` to compile the plugin.
 2. Copy the contents of `bin\Release\net462\` to:
-   ```
-   %AppData%\Playnite\Extensions\ControllerCompatibility\
-   ```
-3. Restart Playnite
-4. Enable the plugin in Settings → Extensions
+  ```
+  %AppData%\Playnite\Extensions\ControllerCompatibility\
+  ```
+3. Restart Playnite.
+4. Enable the plugin in Settings → Extensions.
 
 ### What You'll See
 - **Controller Status**: Top panel shows connected controllers
 - **Game Overlays**: Look for colored badges on game tiles in your library (top-right corner if in 'grid view')
 - **Context Menus**: Right-click games for compatibility options
-- **Visual Feedback**: Badges appear/disappear based on controller connections
+- **Visual Feedback**: Badges appear based on controller compatibility
 
 ### Test Data
 The plugin includes test compatibility data for popular games. Connect a controller to see the full effect!
