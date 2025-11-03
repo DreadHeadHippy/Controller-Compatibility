@@ -5,4 +5,3 @@
 - Controller detection (Xbox, PlayStation, Nintendo, Generic)
 - Game compatibility overlays and top panel status
 - Manual and auto compatibility overrides
-- Community configuration support
