@@ -20,7 +20,6 @@ A Playnite plugin that provides controller compatibility detection and managemen
   - ✅ **Full Controller Support** - Native gamepad support
   - 🎮 **Partial Controller Support** - Some limitations or workarounds needed
   - ❌ **No Controller Support** - Keyboard/mouse only
-  - 🔧 **Community Configurations** - User-created controller configs available
 
 ## Installation & Testing
 
