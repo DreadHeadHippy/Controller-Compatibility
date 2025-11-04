@@ -3,6 +3,7 @@
 <p align="center">
   <img src="in-action01.png" alt="Controller Compatibility Plugin in action" width="300">
   <img src="in-action02.png" alt="Controller Compatibility Plugin overlays" width="300">
+  <img src="in-action03.png" alt="Controller Compatibility Plugin with TrailerLovers theme" width="300">
 </p>
 
 A Playnite plugin that provides controller compatibility detection and management, similar to Steam's controller compatibility system.
@@ -12,6 +13,11 @@ A Playnite plugin that provides controller compatibility detection and managemen
 - Overlay restoration is now lightweight and only triggers on view change or compatibility/controller updates
 - Removed heavy polling and layout event hooks for improved performance
 - Overlays persist reliably when switching between grid and detail views
+
+
+> **Theme Compatibility:**
+>
+> This plugin is confirmed to work with the [TrailerLovers](https://github.com/blooderscrew1/TrailerLovers) fullscreen theme. It *should* work with other Playnite themes, but this has not been confirmed.
 
 ## Features
 
