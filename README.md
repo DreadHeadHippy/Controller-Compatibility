@@ -2,11 +2,9 @@
 
 
 
-<p align="center">
-  <img src="in-action01.png" width="300">
-  <img src="in-action02.png" width="300">
-  <img src="in-action03.png" width="300">
-</p>
+![in-action01](in-action01.png)
+![in-action02](in-action02.png)
+![in-action03](in-action03.png)
 
 A Playnite plugin that provides controller compatibility detection and management, similar to Steam's controller compatibility system.
 
