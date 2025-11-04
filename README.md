@@ -77,6 +77,13 @@ dotnet test
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+
+## Support
+
+This plugin is open source and free to use.
+If you find it helpful and would like to support development, you can donate via [Ko-fi](https://ko-fi.com/dreadheadhippy).
+Donations are appreciated but never required!
+
 ## Acknowledgments
 
 - Inspired by Steam's controller compatibility system
