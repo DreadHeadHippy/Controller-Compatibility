@@ -82,7 +82,7 @@ namespace ControllerCompatibility
     }
     public class ControllerCompatibilityPlugin : GenericPlugin
     {
-    private System.Timers.Timer _overlayRefreshTimer;
+    // Removed overlay refresh timer for performance
     private System.Collections.Generic.HashSet<string> _gamesWithOverlays = new System.Collections.Generic.HashSet<string>();
     private static readonly ILogger logger = LogManager.GetLogger();
     private System.Collections.Generic.Dictionary<System.Guid, string> _gameCompatibilityOverrides = new System.Collections.Generic.Dictionary<System.Guid, string>();
@@ -102,6 +102,36 @@ namespace ControllerCompatibility
             System.Diagnostics.Debug.WriteLine("=== CONTROLLER COMPATIBILITY PLUGIN CONSTRUCTOR START ===");
             Console.WriteLine("=== CONTROLLER COMPATIBILITY PLUGIN CONSTRUCTOR START ===");
 
+            // Ensure icon is present in user data folder for top panel
+            try
+            {
+                var userDataPath = GetPluginUserDataPath();
+                var iconFileName = "controller_overlay_icon.png";
+                var userIconPath = System.IO.Path.Combine(userDataPath, iconFileName);
+                var pluginInstallDir = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+                var installIconPath = System.IO.Path.Combine(pluginInstallDir, iconFileName);
+                if (!System.IO.File.Exists(userIconPath))
+                {
+                    if (System.IO.File.Exists(installIconPath))
+                    {
+                        System.IO.File.Copy(installIconPath, userIconPath, true);
+                        System.IO.File.AppendAllText(@"C:\Temp\controller_plugin_log.txt", $"{DateTime.Now}: === COPIED ICON TO USER DATA FOLDER ===\r\n");
+                    }
+                    else
+                    {
+                        System.IO.File.AppendAllText(@"C:\Temp\controller_plugin_log.txt", $"{DateTime.Now}: === ICON FILE MISSING IN INSTALL DIR ===\r\n");
+                    }
+                }
+                else
+                {
+                    System.IO.File.AppendAllText(@"C:\Temp\controller_plugin_log.txt", $"{DateTime.Now}: === ICON ALREADY PRESENT IN USER DATA FOLDER ===\r\n");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.IO.File.AppendAllText(@"C:\Temp\controller_plugin_log.txt", $"{DateTime.Now}: === ICON COPY ERROR: {ex.Message} ===\r\n");
+            }
+
             // Initialize services
             try
             {
@@ -119,14 +149,12 @@ namespace ControllerCompatibility
                 System.IO.File.AppendAllText(@"C:\Temp\controller_plugin_log.txt", $"{DateTime.Now}: === STACK TRACE: {ex.StackTrace} - INSTANCE {_instanceId} ===\r\n");
             }
 
-            // Initialize overlay refresh timer (check every 500ms for near-instant response)
-            _overlayRefreshTimer = new System.Timers.Timer(500);
-            _overlayRefreshTimer.Elapsed += OnOverlayRefreshTimerElapsed;
-            _overlayRefreshTimer.AutoReset = true;
+            // Overlay refresh timer removed; overlays now update only on compatibility/controller changes
 
             System.IO.File.AppendAllText(@"C:\Temp\controller_plugin_log.txt", $"{DateTime.Now}: === CONTROLLER COMPATIBILITY PLUGIN CONSTRUCTOR END - INSTANCE {_instanceId} ===\r\n");
             System.Diagnostics.Debug.WriteLine("=== CONTROLLER COMPATIBILITY PLUGIN CONSTRUCTOR END ===");
             Console.WriteLine("=== CONTROLLER COMPATIBILITY PLUGIN CONSTRUCTOR END ===");
+            // Overlay restoration: Use GetGameViewControl to trigger overlay refresh on view change
         }
 
         public override IEnumerable<TopPanelItem> GetTopPanelItems()
@@ -170,14 +198,12 @@ namespace ControllerCompatibility
                 System.IO.File.AppendAllText(@"C:\Temp\controller_plugin_log.txt", $"{DateTime.Now}: === GET CONTROLLERS ERROR: {ex.Message} ===\r\n");
             }
 
+            var overlayIconPath = System.IO.Path.Combine(GetPluginUserDataPath(), "controller_overlay_icon.png");
+
             if (controllers.Any())
             {
                 // Show the first detected controller
                 var primaryController = controllers.First();
-
-                var overlayIconPath = System.IO.Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                    "Playnite", "Extensions", "ControllerCompatibility", "controller_overlay_icon.png");
                 yield return new TopPanelItem
                 {
                     Title = $"{primaryController.Name}",
@@ -196,9 +222,6 @@ namespace ControllerCompatibility
             }
             else
             {
-                var overlayIconPath = System.IO.Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                    "Playnite", "Extensions", "ControllerCompatibility", "controller_overlay_icon.png");
                 yield return new TopPanelItem
                 {
                     Title = "No Controllers Detected",
@@ -269,6 +292,9 @@ namespace ControllerCompatibility
             System.Diagnostics.Debug.WriteLine($"=== GET GAME VIEW CONTROL CALLED - Mode: {args.Mode} ===");
             Console.WriteLine($"=== GET GAME VIEW CONTROL CALLED - Mode: {args.Mode} ===");
 
+            // Refresh overlays when view changes
+            RefreshAllOverlays();
+
             // Return the proper controller compatibility overlay control
             var control = new ControllerCompatibilityItemControl();
             System.IO.File.AppendAllText(@"C:\Temp\controller_plugin_log.txt", $"{DateTime.Now}: === CREATED CONTROLLERCONTROLCOMPATIBILITYITEMCONTROL ===\r\n");
@@ -290,16 +316,9 @@ namespace ControllerCompatibility
                 System.IO.File.AppendAllText(@"C:\Temp\controller_plugin_log.txt", $"{DateTime.Now}: === CONTROLLER MONITORING FAILED: {ex.Message} ===\r\n");
             }
 
-            // Start the overlay refresh timer
-            _overlayRefreshTimer.Start();
-            System.IO.File.AppendAllText(@"C:\Temp\controller_plugin_log.txt", $"{DateTime.Now}: === OVERLAY REFRESH TIMER STARTED (500ms) ===\r\n");
-
-            // Hook into layout changes for immediate overlay restoration
-            if (Application.Current.MainWindow != null)
-            {
-                Application.Current.MainWindow.LayoutUpdated += OnMainWindowLayoutUpdated;
-                System.IO.File.AppendAllText(@"C:\Temp\controller_plugin_log.txt", $"{DateTime.Now}: === HOOKED INTO LAYOUT UPDATED EVENTS ===\r\n");
-            }
+            // Overlay refresh timer and layout event hooks removed for performance
+            // Unsubscribe from layout events (no longer needed)
+            // LayoutUpdated event handler fully removed
 
             // Try to add custom element support for visual overlays
             try
@@ -327,81 +346,7 @@ namespace ControllerCompatibility
                 System.IO.File.AppendAllText(@"C:\Temp\controller_plugin_log.txt", $"{DateTime.Now}: === INITIAL OVERLAY REFRESH FAILED: {ex.Message} - INSTANCE {_instanceId} ===\r\n");
             }
 
-            // Schedule multiple delayed refreshes for when the UI is fully loaded (handles force close scenarios)
-            try
-            {
-                // First delayed refresh at 1 second
-                var delayedRefreshTimer1 = new System.Timers.Timer(1000);
-                delayedRefreshTimer1.Elapsed += (sender, e) =>
-                {
-                    Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        try
-                        {
-                            RefreshAllOverlays();
-                            System.IO.File.AppendAllText(@"C:\Temp\controller_plugin_log.txt", $"{DateTime.Now}: === 1s DELAYED OVERLAY REFRESH COMPLETED - INSTANCE {_instanceId} ===\r\n");
-                        }
-                        catch (Exception ex)
-                        {
-                            System.IO.File.AppendAllText(@"C:\Temp\controller_plugin_log.txt", $"{DateTime.Now}: === 1s DELAYED OVERLAY REFRESH FAILED: {ex.Message} - INSTANCE {_instanceId} ===\r\n");
-                        }
-                    });
-                    delayedRefreshTimer1.Stop();
-                    delayedRefreshTimer1.Dispose();
-                };
-                delayedRefreshTimer1.AutoReset = false;
-                delayedRefreshTimer1.Start();
-
-                // Second delayed refresh at 3 seconds
-                var delayedRefreshTimer2 = new System.Timers.Timer(3000);
-                delayedRefreshTimer2.Elapsed += (sender, e) =>
-                {
-                    Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        try
-                        {
-                            RefreshAllOverlays();
-                            System.IO.File.AppendAllText(@"C:\Temp\controller_plugin_log.txt", $"{DateTime.Now}: === 3s DELAYED OVERLAY REFRESH COMPLETED - INSTANCE {_instanceId} ===\r\n");
-                        }
-                        catch (Exception ex)
-                        {
-                            System.IO.File.AppendAllText(@"C:\Temp\controller_plugin_log.txt", $"{DateTime.Now}: === 3s DELAYED OVERLAY REFRESH FAILED: {ex.Message} - INSTANCE {_instanceId} ===\r\n");
-                        }
-                    });
-                    delayedRefreshTimer2.Stop();
-                    delayedRefreshTimer2.Dispose();
-                };
-                delayedRefreshTimer2.AutoReset = false;
-                delayedRefreshTimer2.Start();
-
-                // Third delayed refresh at 5 seconds
-                var delayedRefreshTimer3 = new System.Timers.Timer(5000);
-                delayedRefreshTimer3.Elapsed += (sender, e) =>
-                {
-                    Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        try
-                        {
-                            RefreshAllOverlays();
-                            System.IO.File.AppendAllText(@"C:\Temp\controller_plugin_log.txt", $"{DateTime.Now}: === 5s DELAYED OVERLAY REFRESH COMPLETED - INSTANCE {_instanceId} ===\r\n");
-                        }
-                        catch (Exception ex)
-                        {
-                            System.IO.File.AppendAllText(@"C:\Temp\controller_plugin_log.txt", $"{DateTime.Now}: === 5s DELAYED OVERLAY REFRESH FAILED: {ex.Message} - INSTANCE {_instanceId} ===\r\n");
-                        }
-                    });
-                    delayedRefreshTimer3.Stop();
-                    delayedRefreshTimer3.Dispose();
-                };
-                delayedRefreshTimer3.AutoReset = false;
-                delayedRefreshTimer3.Start();
-
-                System.IO.File.AppendAllText(@"C:\Temp\controller_plugin_log.txt", $"{DateTime.Now}: === MULTIPLE DELAYED REFRESH TIMERS STARTED (1s, 3s, 5s) - INSTANCE {_instanceId} ===\r\n");
-            }
-            catch (Exception ex)
-            {
-                System.IO.File.AppendAllText(@"C:\Temp\controller_plugin_log.txt", $"{DateTime.Now}: === FAILED TO START DELAYED REFRESH: {ex.Message} - INSTANCE {_instanceId} ===\r\n");
-            }
+            // Delayed refresh timers removed for performance
 
             // Add controller compatibility features to games for testing
             try
@@ -429,33 +374,8 @@ namespace ControllerCompatibility
         {
             System.IO.File.AppendAllText(@"C:\Temp\controller_plugin_log.txt", $"{DateTime.Now}: === ON GAME SELECTED CALLED - Type: {args.NewValue?.GetType().Name ?? "null"} ===\r\n");
 
-            // Always refresh existing overlays first (for view changes)
-            RefreshAllOverlays();
-
-            // Try to add visual overlays to selected game UI elements
-            if (args.NewValue is System.Collections.Generic.List<Playnite.SDK.Models.Game> games)
-            {
-                System.IO.File.AppendAllText(@"C:\Temp\controller_plugin_log.txt", $"{DateTime.Now}: === SELECTED {games.Count} GAMES ===\r\n");
-
-                try
-                {
-                    // Try to find and modify game UI elements
-                    AddVisualOverlaysToGames(games);
-                }
-                catch (Exception ex)
-                {
-                    System.IO.File.AppendAllText(@"C:\Temp\controller_plugin_log.txt", $"{DateTime.Now}: === FAILED TO ADD OVERLAYS: {ex.Message} ===\r\n");
-                }
-
-                foreach (var game in games.Take(3))
-                {
-                    System.IO.File.AppendAllText(@"C:\Temp\controller_plugin_log.txt", $"{DateTime.Now}: === GAME: {game.Name} (ID: {game.Id}) ===\r\n");
-                }
-                if (games.Count > 3)
-                {
-                    System.IO.File.AppendAllText(@"C:\Temp\controller_plugin_log.txt", $"{DateTime.Now}: === ... and {games.Count - 3} more ===\r\n");
-                }
-            }
+            // Do not refresh overlays on every selection in details view
+            // Only add overlays if a game is selected in grid view (if you want, you can add logic here based on args or UI state)
         }
 
         private void AddVisualOverlaysToGames(System.Collections.Generic.List<Playnite.SDK.Models.Game> games)
@@ -808,7 +728,63 @@ namespace ControllerCompatibility
                 var existingOverlay = existingGrid.Children.OfType<Border>()
                     .FirstOrDefault(b => b.ToolTip?.ToString()?.Contains("Controller") == true);
 
-                if (existingOverlay == null)
+                // Only update overlay if compatibility or color has changed
+                if (existingOverlay != null)
+                {
+                    var currentColor = existingOverlay.Background as SolidColorBrush;
+                    var newColor = backgroundBrush as SolidColorBrush;
+                    if (currentColor == null || newColor == null || currentColor.Color != newColor.Color || existingOverlay.ToolTip?.ToString() != tooltip)
+                    {
+                        existingOverlay.Background = backgroundBrush;
+                        existingOverlay.ToolTip = tooltip;
+                    }
+                    // No need to re-wrap or re-add overlay
+                }
+                else
+                {
+                    // Add overlay only if not present
+                    var overlay = new Border
+                    {
+                        Width = 20,
+                        Height = 20,
+                        CornerRadius = new CornerRadius(3),
+                        Background = backgroundBrush,
+                        BorderBrush = Brushes.White,
+                        BorderThickness = new Thickness(1),
+                        HorizontalAlignment = HorizontalAlignment.Right,
+                        VerticalAlignment = VerticalAlignment.Top,
+                        Margin = new Thickness(0, 2, 2, 0),
+                        ToolTip = tooltip,
+                        Opacity = 0.9
+                    };
+                    var icon = new TextBlock
+                    {
+                        Text = "🎮",
+                        FontSize = 10,
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center,
+                        FontWeight = FontWeights.Bold
+                    };
+                    overlay.Child = icon;
+                    existingGrid.Children.Add(overlay);
+                }
+            }
+            else
+            {
+                // Fallback: only wrap if overlay not already present
+                if (gameTile.Content is Grid grid && grid.Children.OfType<Border>().Any(b => b.ToolTip?.ToString()?.Contains("Controller") == true))
+                {
+                    // Overlay already present, update if needed
+                    var existingOverlay = grid.Children.OfType<Border>().FirstOrDefault(b => b.ToolTip?.ToString()?.Contains("Controller") == true);
+                    var currentColor = existingOverlay?.Background as SolidColorBrush;
+                    var newColor = backgroundBrush as SolidColorBrush;
+                    if (existingOverlay != null && (currentColor == null || newColor == null || currentColor.Color != newColor.Color || existingOverlay.ToolTip?.ToString() != tooltip))
+                    {
+                        existingOverlay.Background = backgroundBrush;
+                        existingOverlay.ToolTip = tooltip;
+                    }
+                }
+                else
                 {
                     // Create overlay border
                     var overlay = new Border
@@ -825,8 +801,6 @@ namespace ControllerCompatibility
                         ToolTip = tooltip,
                         Opacity = 0.9
                     };
-
-                    // Add controller icon
                     var icon = new TextBlock
                     {
                         Text = "🎮",
@@ -836,87 +810,19 @@ namespace ControllerCompatibility
                         FontWeight = FontWeights.Bold
                     };
                     overlay.Child = icon;
-
-                    // Add to existing grid
-                    existingGrid.Children.Add(overlay);
+                    // Create a grid to hold both the original content and the overlay
+                    var newGrid = new Grid();
+                    if (gameTile.Content is UIElement uiElement)
+                    {
+                        newGrid.Children.Add(uiElement);
+                    }
+                    newGrid.Children.Add(overlay);
+                    gameTile.Content = newGrid;
                 }
-                else
-                {
-                    // Update existing overlay color if compatibility changed
-                    existingOverlay.Background = backgroundBrush;
-                    existingOverlay.ToolTip = tooltip;
-                }
-            }
-            else
-            {
-                // Fallback: create a new grid wrapper (less ideal)
-                System.IO.File.AppendAllText(@"C:\Temp\controller_plugin_log.txt", $"{DateTime.Now}: === NO EXISTING GRID FOUND FOR OVERLAY, USING FALLBACK ===\r\n");
-
-                // Create overlay border
-                var overlay = new Border
-                {
-                    Width = 20,
-                    Height = 20,
-                    CornerRadius = new CornerRadius(3),
-                    Background = backgroundBrush,
-                    BorderBrush = Brushes.White,
-                    BorderThickness = new Thickness(1),
-                    HorizontalAlignment = HorizontalAlignment.Right,
-                    VerticalAlignment = VerticalAlignment.Top,
-                    Margin = new Thickness(0, 2, 2, 0),
-                    ToolTip = tooltip,
-                    Opacity = 0.9
-                };
-
-                // Add controller icon
-                var icon = new TextBlock
-                {
-                    Text = "🎮",
-                    FontSize = 10,
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    FontWeight = FontWeights.Bold
-                };
-                overlay.Child = icon;
-
-                // Create a grid to hold both the original content and the overlay
-                var grid = new Grid();
-                if (gameTile.Content is UIElement uiElement)
-                {
-                    grid.Children.Add(uiElement);
-                }
-                grid.Children.Add(overlay);
-                gameTile.Content = grid;
             }
         }
 
-        private void OnMainWindowLayoutUpdated(object sender, System.EventArgs e)
-        {
-            // Immediate refresh when layout changes (view switches, etc.)
-            try
-            {
-                RefreshAllOverlays();
-            }
-            catch
-            {
-                // Silent error handling
-            }
-        }
-        private void OnOverlayRefreshTimerElapsed(object sender, System.Timers.ElapsedEventArgs e)
-        {
-            // Refresh overlays on UI thread
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                try
-                {
-                    RefreshAllOverlays();
-                }
-                catch
-                {
-                    // Silent error handling for timer
-                }
-            });
-        }
+        // Removed: overlays now refresh only on controller/compatibility changes
 
         private void RefreshAllOverlays()
         {
@@ -925,76 +831,26 @@ namespace ControllerCompatibility
 
             try
             {
-                // Find all ListBoxItem elements
-                var listBoxItems = FindVisualChildren<System.Windows.Controls.ListBoxItem>(mainWindow).ToList();
-
-                // Get all games that should have overlays (those with manual overrides or in the tracking set)
-                var gamesToRefresh = new System.Collections.Generic.HashSet<string>(_gamesWithOverlays);
-                foreach (var overrideEntry in _gameCompatibilityOverrides)
+                // Batch all overlay updates on the UI thread using dispatcher
+                Application.Current.Dispatcher.Invoke(() =>
                 {
-                    var game = PlayniteApi.Database.Games.FirstOrDefault(g => g.Id == overrideEntry.Key);
-                    if (game != null)
+                    // Find all ListBoxItem elements
+                    var listBoxItems = FindVisualChildren<System.Windows.Controls.ListBoxItem>(mainWindow).ToList();
+
+                    // Get all games that should have overlays (those with manual overrides or in the tracking set)
+                    var gamesToRefresh = new System.Collections.Generic.HashSet<string>(_gamesWithOverlays);
+                    foreach (var overrideEntry in _gameCompatibilityOverrides)
                     {
-                        gamesToRefresh.Add(game.Name);
+                        var game = PlayniteApi.Database.Games.FirstOrDefault(g => g.Id == overrideEntry.Key);
+                        if (game != null)
+                        {
+                            gamesToRefresh.Add(game.Name);
+                        }
                     }
-                }
 
-                foreach (var gameName in gamesToRefresh)
-                {
-                    System.IO.File.AppendAllText(@"C:\Temp\controller_plugin_log.txt", $"{DateTime.Now}: === REFRESHING OVERLAYS FOR GAME: '{gameName}' ===\r\n");
-
-                    var matchingTiles = listBoxItems.Where(item =>
+                    foreach (var gameName in gamesToRefresh)
                     {
-                        string itemText;
-                        string dataContextType = item.DataContext?.GetType().Name ?? "null";
-                        if (item.DataContext is Playnite.SDK.Models.Game tileGame)
-                        {
-                            itemText = tileGame.Name;
-                        }
-                        else if (dataContextType == "GamesCollectionViewEntry")
-                        {
-                            // Try to access the Game property from GamesCollectionViewEntry
-                            var gameProperty = item.DataContext.GetType().GetProperty("Game");
-                            if (gameProperty != null)
-                            {
-                                var gameObj = gameProperty.GetValue(item.DataContext) as Playnite.SDK.Models.Game;
-                                if (gameObj != null)
-                                {
-                                    itemText = gameObj.Name;
-                                }
-                                else
-                                {
-                                    itemText = item.DataContext?.ToString() ?? "";
-                                }
-                            }
-                            else
-                            {
-                                itemText = item.DataContext?.ToString() ?? "";
-                            }
-                        }
-                        else
-                        {
-                            itemText = item.DataContext?.ToString() ?? "";
-                        }
-
-                        bool exactMatch = itemText == gameName;
-                        bool containsMatch = itemText.Contains(gameName) || gameName.Contains(itemText);
-                        bool matches = exactMatch || containsMatch;
-
-                        if (matches)
-                        {
-                            System.IO.File.AppendAllText(@"C:\Temp\controller_plugin_log.txt", $"{DateTime.Now}: === TILE MATCH FOUND: '{itemText}' (DataContext: {dataContextType}) for game '{gameName}' ===\r\n");
-                        }
-
-                        return matches;
-                    }).ToList();
-
-                    // Also try normalized matching
-                    if (matchingTiles.Count == 0)
-                    {
-                        var normalizedGameName = System.Text.RegularExpressions.Regex.Replace(gameName.ToLower(), @"[^a-z0-9]", "");
-                        normalizedGameName = System.Text.RegularExpressions.Regex.Replace(normalizedGameName, @"0+(\d)", "$1");
-                        matchingTiles = listBoxItems.Where(item =>
+                        var matchingTiles = listBoxItems.Where(item =>
                         {
                             string itemText;
                             string dataContextType = item.DataContext?.GetType().Name ?? "null";
@@ -1004,7 +860,6 @@ namespace ControllerCompatibility
                             }
                             else if (dataContextType == "GamesCollectionViewEntry")
                             {
-                                // Try to access the Game property from GamesCollectionViewEntry
                                 var gameProperty = item.DataContext.GetType().GetProperty("Game");
                                 if (gameProperty != null)
                                 {
@@ -1027,107 +882,128 @@ namespace ControllerCompatibility
                             {
                                 itemText = item.DataContext?.ToString() ?? "";
                             }
-                            var normalizedItemText = System.Text.RegularExpressions.Regex.Replace(itemText.ToLower(), @"[^a-z0-9]", "");
-                            normalizedItemText = System.Text.RegularExpressions.Regex.Replace(normalizedItemText, @"0+(\d)", "$1");
-                            var lengthDiff = System.Math.Abs(normalizedItemText.Length - normalizedGameName.Length);
-                            bool matches = normalizedItemText == normalizedGameName ||
-                                           (lengthDiff <= 3 && (normalizedItemText.Contains(normalizedGameName) || normalizedGameName.Contains(normalizedItemText))) ||
-                                           (System.Text.RegularExpressions.Regex.Replace(normalizedGameName, @"\d+", "") == System.Text.RegularExpressions.Regex.Replace(normalizedItemText, @"\d+", "") && !string.IsNullOrEmpty(System.Text.RegularExpressions.Regex.Replace(normalizedGameName, @"\d+", "")));
-
-                            if (matches)
-                            {
-                                System.IO.File.AppendAllText(@"C:\Temp\controller_plugin_log.txt", $"{DateTime.Now}: === NORMALIZED TILE MATCH FOUND: '{itemText}' (DataContext: {dataContextType}) normalized '{normalizedItemText}' for game '{gameName}' normalized '{normalizedGameName}' ===\r\n");
-                            }
-
-                            return matches;
+                            bool exactMatch = itemText == gameName;
+                            bool containsMatch = itemText.Contains(gameName) || gameName.Contains(itemText);
+                            return exactMatch || containsMatch;
                         }).ToList();
-                    }
 
-                    System.IO.File.AppendAllText(@"C:\Temp\controller_plugin_log.txt", $"{DateTime.Now}: === FOUND {matchingTiles.Count} MATCHING TILES FOR '{gameName}' ===\r\n");
-
-                    foreach (var tile in matchingTiles)
-                    {
-                        // Find the game object to get its compatibility
-                        var game = PlayniteApi.Database.Games.FirstOrDefault(g => g.Name == gameName);
-                        if (game == null) continue;
-
-                        var compatibility = GetGameCompatibility(game);
-
-                        // Determine colors based on compatibility
-                        Brush backgroundBrush;
-                        string tooltip;
-
-                        switch (compatibility.ToLower())
+                        if (matchingTiles.Count == 0)
                         {
-                            case "full":
-                                backgroundBrush = Brushes.Green;
-                                tooltip = "Full Controller Support";
-                                break;
-                            case "partial":
-                                backgroundBrush = Brushes.Yellow;
-                                tooltip = "Partial Controller Support";
-                                break;
-                            case "none":
-                                backgroundBrush = Brushes.Red;
-                                tooltip = "No Controller Support";
-                                break;
-                            default:
-                                backgroundBrush = Brushes.Gray;
-                                tooltip = "Unknown Controller Support";
-                                break;
-                        }
-
-                        // Check if overlay already exists
-                        var existingGrid = FindVisualChildren<System.Windows.Controls.Grid>(tile).FirstOrDefault();
-                        if (existingGrid != null)
-                        {
-                            var existingOverlay = existingGrid.Children.OfType<Border>()
-                                .FirstOrDefault(b => b.ToolTip?.ToString()?.Contains("Controller") == true);
-
-                            if (existingOverlay == null)
+                            var normalizedGameName = System.Text.RegularExpressions.Regex.Replace(gameName.ToLower(), @"[^a-z0-9]", "");
+                            normalizedGameName = System.Text.RegularExpressions.Regex.Replace(normalizedGameName, @"0+(\d)", "$1");
+                            matchingTiles = listBoxItems.Where(item =>
                             {
-                                System.IO.File.AppendAllText(@"C:\Temp\controller_plugin_log.txt", $"{DateTime.Now}: === NO EXISTING OVERLAY FOUND FOR '{gameName}', ADDING NEW ONE ===\r\n");
-                                // Re-add overlay with correct color
-                                var overlay = new Border
+                                string itemText;
+                                string dataContextType = item.DataContext?.GetType().Name ?? "null";
+                                if (item.DataContext is Playnite.SDK.Models.Game tileGame)
                                 {
-                                    Width = 20,
-                                    Height = 20,
-                                    CornerRadius = new CornerRadius(3),
-                                    Background = backgroundBrush,
-                                    BorderBrush = Brushes.White,
-                                    BorderThickness = new Thickness(1),
-                                    HorizontalAlignment = HorizontalAlignment.Right,
-                                    VerticalAlignment = VerticalAlignment.Top,
-                                    Margin = new Thickness(0, 2, 2, 0),
-                                    ToolTip = tooltip,
-                                    Opacity = 0.9
-                                };
-
-                                var icon = new TextBlock
+                                    itemText = tileGame.Name;
+                                }
+                                else if (dataContextType == "GamesCollectionViewEntry")
                                 {
-                                    Text = "🎮",
-                                    FontSize = 10,
-                                    HorizontalAlignment = HorizontalAlignment.Center,
-                                    VerticalAlignment = VerticalAlignment.Center,
-                                    FontWeight = FontWeights.Bold
-                                };
-                                overlay.Child = icon;
-                                existingGrid.Children.Add(overlay);
-                            }
-                            else
-                            {
-                                System.IO.File.AppendAllText(_logPath, $"{DateTime.Now}: === UPDATING EXISTING OVERLAY FOR '{gameName}' from {existingOverlay.Background} to {backgroundBrush} ===\r\n");
-                                // Update existing overlay color and tooltip
-                                existingOverlay.Background = backgroundBrush;
-                                existingOverlay.ToolTip = tooltip;
-                            }
+                                    var gameProperty = item.DataContext.GetType().GetProperty("Game");
+                                    if (gameProperty != null)
+                                    {
+                                        var gameObj = gameProperty.GetValue(item.DataContext) as Playnite.SDK.Models.Game;
+                                        if (gameObj != null)
+                                        {
+                                            itemText = gameObj.Name;
+                                        }
+                                        else
+                                        {
+                                            itemText = item.DataContext?.ToString() ?? "";
+                                        }
+                                    }
+                                    else
+                                    {
+                                        itemText = item.DataContext?.ToString() ?? "";
+                                    }
+                                }
+                                else
+                                {
+                                    itemText = item.DataContext?.ToString() ?? "";
+                                }
+                                var normalizedItemText = System.Text.RegularExpressions.Regex.Replace(itemText.ToLower(), @"[^a-z0-9]", "");
+                                normalizedItemText = System.Text.RegularExpressions.Regex.Replace(normalizedItemText, @"0+(\d)", "$1");
+                                var lengthDiff = System.Math.Abs(normalizedItemText.Length - normalizedGameName.Length);
+                                return normalizedItemText == normalizedGameName ||
+                                       (lengthDiff <= 3 && (normalizedItemText.Contains(normalizedGameName) || normalizedGameName.Contains(normalizedItemText))) ||
+                                       (System.Text.RegularExpressions.Regex.Replace(normalizedGameName, @"\d+", "") == System.Text.RegularExpressions.Regex.Replace(normalizedItemText, @"\d+", "") && !string.IsNullOrEmpty(System.Text.RegularExpressions.Regex.Replace(normalizedGameName, @"\d+", "")));
+                            }).ToList();
                         }
-                        else
+
+                        foreach (var tile in matchingTiles)
                         {
-                            System.IO.File.AppendAllText(_logPath, $"{DateTime.Now}: === NO GRID FOUND FOR TILE OF '{gameName}' ===\r\n");
+                            var game = PlayniteApi.Database.Games.FirstOrDefault(g => g.Name == gameName);
+                            if (game == null) continue;
+
+                            var compatibility = GetGameCompatibility(game);
+
+                            Brush backgroundBrush;
+                            string tooltip;
+
+                            switch (compatibility.ToLower())
+                            {
+                                case "full":
+                                    backgroundBrush = Brushes.Green;
+                                    tooltip = "Full Controller Support";
+                                    break;
+                                case "partial":
+                                    backgroundBrush = Brushes.Yellow;
+                                    tooltip = "Partial Controller Support";
+                                    break;
+                                case "none":
+                                    backgroundBrush = Brushes.Red;
+                                    tooltip = "No Controller Support";
+                                    break;
+                                default:
+                                    backgroundBrush = Brushes.Gray;
+                                    tooltip = "Unknown Controller Support";
+                                    break;
+                            }
+
+                            var existingGrid = FindVisualChildren<System.Windows.Controls.Grid>(tile).FirstOrDefault();
+                            if (existingGrid != null)
+                            {
+                                var existingOverlay = existingGrid.Children.OfType<Border>()
+                                    .FirstOrDefault(b => b.ToolTip?.ToString()?.Contains("Controller") == true);
+
+                                if (existingOverlay == null)
+                                {
+                                    var overlay = new Border
+                                    {
+                                        Width = 20,
+                                        Height = 20,
+                                        CornerRadius = new CornerRadius(3),
+                                        Background = backgroundBrush,
+                                        BorderBrush = Brushes.White,
+                                        BorderThickness = new Thickness(1),
+                                        HorizontalAlignment = HorizontalAlignment.Right,
+                                        VerticalAlignment = VerticalAlignment.Top,
+                                        Margin = new Thickness(0, 2, 2, 0),
+                                        ToolTip = tooltip,
+                                        Opacity = 0.9
+                                    };
+                                    var icon = new TextBlock
+                                    {
+                                        Text = "🎮",
+                                        FontSize = 10,
+                                        HorizontalAlignment = HorizontalAlignment.Center,
+                                        VerticalAlignment = VerticalAlignment.Center,
+                                        FontWeight = FontWeights.Bold
+                                    };
+                                    overlay.Child = icon;
+                                    existingGrid.Children.Add(overlay);
+                                }
+                                else
+                                {
+                                    existingOverlay.Background = backgroundBrush;
+                                    existingOverlay.ToolTip = tooltip;
+                                }
+                            }
                         }
                     }
-                }
+                });
             }
             catch (Exception ex)
             {
