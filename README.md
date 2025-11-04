@@ -3,12 +3,15 @@
 
 
 **Detail View**
+
 ![in-action01](in-action01.png)
 
 **Grid View**
+
 ![in-action02](in-action02.png)
 
 **Modified TrailerLovers Fullscreen Theme**
+
 ![in-action03](in-action03.png)
 
 A Playnite plugin that provides controller compatibility detection and management, similar to Steam's controller compatibility system.
