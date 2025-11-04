@@ -1,4 +1,4 @@
-# Playnite Controller Compatibility Plugin
+# Playnite Controller Compatibility Plugin (v1.0.2)
 
 <p align="center">
   <img src="in-action01.png" alt="Controller Compatibility Plugin in action" width="300">
@@ -6,6 +6,12 @@
 </p>
 
 A Playnite plugin that provides controller compatibility detection and management, similar to Steam's controller compatibility system.
+
+
+## What's New in v1.0.2
+- Overlay restoration is now lightweight and only triggers on view change or compatibility/controller updates
+- Removed heavy polling and layout event hooks for improved performance
+- Overlays persist reliably when switching between grid and detail views
 
 ## Features
 

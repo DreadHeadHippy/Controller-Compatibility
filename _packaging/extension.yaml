@@ -1,0 +1,7 @@
+id: ControllerCompatibility
+name: Controller Compatibility
+author: DreadHeadHippy
+version: 1.0.2
+module: ControllerCompatibility.dll
+icon: controller_overlay_icon.png
+description: Playnite plugin for controller compatibility detection and overlays.
