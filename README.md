@@ -1,6 +1,13 @@
 # Playnite Controller Compatibility Plugin (v1.0.2)
 
+![Release](https://img.shields.io/github/v/release/DreadHeadHippy/Controller-Compatibility)
+![Status](https://img.shields.io/badge/status-actively%20maintained-brightgreen)
+![Downloads](https://img.shields.io/github/downloads/DreadHeadHippy/Controller-Compatibility/total)
+![Last Commit](https://img.shields.io/github/last-commit/DreadHeadHippy/Controller-Compatibility)
+[![Ko-fi](https://img.shields.io/badge/Support-Ko--fi-FF5E5B?logo=ko-fi&logoColor=white)](https://ko-fi.com/dreadheadhippy)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
+---
 
 **Detail View**
 
