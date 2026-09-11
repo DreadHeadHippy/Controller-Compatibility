@@ -5,8 +5,8 @@
     <LangVersion>8.0</LangVersion>
     <AssemblyTitle>Controller Compatibility Plugin</AssemblyTitle>
     <Product>Controller Compatibility Plugin</Product>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <FileVersion>1.0.0.0</FileVersion>
+    <AssemblyVersion>1.0.3.0</AssemblyVersion>
+    <FileVersion>1.0.3.0</FileVersion>
     <OutputType>Library</OutputType>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <UseWPF>true</UseWPF>
@@ -19,7 +19,8 @@
     <Reference Include="PresentationFramework" />
     <Reference Include="WindowsBase" />
     <Reference Include="Playnite.SDK">
-      <HintPath>$(LOCALAPPDATA)\Playnite\Playnite.SDK.dll</HintPath>
+      <HintPath>$(USERPROFILE)\AppData\Local\Playnite\Playnite.SDK.dll</HintPath>
+      <Private>false</Private>
     </Reference>
   </ItemGroup>
 

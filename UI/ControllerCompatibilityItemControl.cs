@@ -14,17 +14,27 @@ namespace ControllerCompatibility
     public class ControllerCompatibilityItemControl : System.Windows.Controls.ContentControl
     {
         private static readonly ILogger logger = LogManager.GetLogger();
-        private CompatibilityDatabase compatibilityDb;
-        private ControllerDetectionService controllerService;
+        private readonly ControllerCompatibilityPlugin plugin;
+        private Game currentGame;
 
-        public ControllerCompatibilityItemControl()
+        public ControllerCompatibilityItemControl(ControllerCompatibilityPlugin plugin)
         {
             System.Diagnostics.Debug.WriteLine("=== CONTROLLER COMPATIBILITY ITEM CONTROL CREATED ===");
             Console.WriteLine("=== CONTROLLER COMPATIBILITY ITEM CONTROL CREATED ===");
 
-            compatibilityDb = new CompatibilityDatabase();
-            controllerService = new ControllerDetectionService();
+            this.plugin = plugin;
+            plugin.CompatibilityChanged += OnCompatibilityChanged;
+            Unloaded += (s, e) => plugin.CompatibilityChanged -= OnCompatibilityChanged;
             InitializeComponent();
+        }
+
+        private void OnCompatibilityChanged(Guid gameId)
+        {
+            // Only refresh this tile if the changed game is the one it's currently bound to
+            if (currentGame != null && currentGame.Id == gameId)
+            {
+                Dispatcher.Invoke(() => UpdateCompatibilityOverlay(currentGame));
+            }
         }
 
         private void InitializeComponent()
@@ -93,12 +103,14 @@ namespace ControllerCompatibility
             {
                 System.Diagnostics.Debug.WriteLine($"=== BINDING TO GAME: {game.Name} ===");
                 Console.WriteLine($"=== BINDING TO GAME: {game.Name} ===");
+                currentGame = game;
                 UpdateCompatibilityOverlay(game);
             }
             else
             {
                 System.Diagnostics.Debug.WriteLine("=== NOT A GAME OBJECT ===");
                 Console.WriteLine("=== NOT A GAME OBJECT ===");
+                currentGame = null;
             }
         }
 
@@ -106,8 +118,9 @@ namespace ControllerCompatibility
         {
             try
             {
-                var compatibility = compatibilityDb.GetCompatibilityInfo(game);
-                var connectedControllers = controllerService.GetConnectedControllers();
+                // Use the plugin's shared, override-aware compatibility lookup so manual overrides are respected
+                var supportLevel = plugin.GetCompatibilityLevel(game);
+                var connectedControllers = plugin.ControllerService.GetConnectedControllers();
 
                 var overlayPanel = Content as Grid;
                 var backgroundOverlay = overlayPanel?.Children[0] as Border;
@@ -118,7 +131,7 @@ namespace ControllerCompatibility
                 if (controllerIcon == null || compatibilityText == null || backgroundOverlay == null) return;
 
                 // Set icon, text, and colors based on compatibility level
-                var overlayInfo = GetCompatibilityOverlayInfo(compatibility.SupportLevel, connectedControllers.Any());
+                var overlayInfo = GetCompatibilityOverlayInfo(supportLevel, connectedControllers.Any());
 
                 controllerIcon.Text = overlayInfo.Icon;
                 controllerIcon.Foreground = new SolidColorBrush(overlayInfo.TextColor);
@@ -130,7 +143,7 @@ namespace ControllerCompatibility
                 backgroundOverlay.ToolTip = overlayInfo.Tooltip;
 
                 // Show/hide overlay based on relevance
-                var shouldShow = ShouldShowOverlay(compatibility.SupportLevel, connectedControllers.Any());
+                var shouldShow = ShouldShowOverlay(supportLevel, connectedControllers.Any());
                 backgroundOverlay.Visibility = shouldShow ? Visibility.Visible : Visibility.Collapsed;
 
                 // Adjust opacity based on whether controllers are connected

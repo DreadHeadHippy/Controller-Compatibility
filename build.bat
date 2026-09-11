@@ -1,17 +1,17 @@
 @echo off
-echo Building Controller Compatibility Plugin (Test Version)...
+echo Building Controller Compatibility Plugin...
 
 REM Build the project
 dotnet build ControllerCompatibility.csproj --configuration Release
 
 if %ERRORLEVEL% EQU 0 (
     echo.
-    echo Build successful! This is a TEST version with mock Playnite SDK.
+    echo Build successful! Plugin built with official Playnite SDK.
     echo.
     echo Test files are located in:
     echo %~dp0bin\Release\net462\
     echo.
-    echo NOTE: This test version uses mock Playnite SDK classes.
+    rem NOTE: This build uses the official Playnite SDK.
     echo For production use, you would need the actual Playnite SDK.
     echo.
     echo The plugin demonstrates:
@@ -23,7 +23,7 @@ if %ERRORLEVEL% EQU 0 (
     echo To test with real Playnite:
     echo 1. Get the official Playnite SDK
     echo 2. Update project references to use real SDK
-    echo 3. Remove MockPlayniteSDK.cs
+    rem 3. Ensure MockPlayniteSDK.cs is removed (should not exist in production)
     echo 4. Install to %%AppData%%\Playnite\Extensions\ControllerCompatibility\
 ) else (
     echo.

@@ -231,19 +231,4 @@ namespace ControllerCompatibility
             }
         }
     }
-
-    // Extension to integrate controller indicators into game library views
-    public class ControllerCompatibilityViewExtension
-    {
-        public System.Windows.Controls.Control GetGameViewControl(GetGameViewControlArgs args)
-        {
-            if (args.Mode == ApplicationMode.Desktop)
-            {
-                // Add controller compatibility column
-                return new ControllerCompatibilityItemControl();
-            }
-
-            return null;
-        }
-    }
 }

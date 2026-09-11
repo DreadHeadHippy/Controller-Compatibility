@@ -1,4 +1,4 @@
-# Playnite Controller Compatibility Plugin (v1.0.2)
+# Playnite Controller Compatibility Plugin (v1.0.3)
 
 
 
@@ -17,10 +17,11 @@
 A Playnite plugin that provides controller compatibility detection and management, similar to Steam's controller compatibility system.
 
 
-## What's New in v1.0.2
-- Overlay restoration is now lightweight and only triggers on view change or compatibility/controller updates
-- Removed heavy polling and layout event hooks for improved performance
-- Overlays persist reliably when switching between grid and detail views
+## What's New in v1.0.3
+- Fixed a bug where game tile overlays could randomly flip to the wrong color (e.g. green showing as yellow/red) when clicking between unrelated games
+- Removed a legacy overlay mechanism that manually matched game tiles by name and was unsafe under Playnite's UI virtualization
+- Manual "Set Controller Compatibility" overrides now update the correct tile immediately and no longer affect unrelated games
+- Removed a loose name-matching fallback in the compatibility database that could return another game's data
 
 
 > **Theme Compatibility:**

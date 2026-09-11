@@ -136,19 +136,10 @@ namespace ControllerCompatibility
 
         private GameCompatibilityInfo FindCompatibilityByName(Game game)
         {
-            // Try exact name match
-            var exactMatch = gameCompatibility.Values.FirstOrDefault(info => 
+            // Exact match only - loose substring matching previously caused unrelated games to
+            // show each other's compatibility overlay when a key-based lookup missed.
+            return gameCompatibility.Values.FirstOrDefault(info =>
                 string.Equals(info.GameName, game.Name, StringComparison.OrdinalIgnoreCase));
-            
-            if (exactMatch != null)
-                return exactMatch;
-
-            // Try partial name match
-            var partialMatch = gameCompatibility.Values.FirstOrDefault(info =>
-                info.GameName.ToLowerInvariant().Contains(game.Name.ToLowerInvariant()) ||
-                game.Name.ToLowerInvariant().Contains(info.GameName.ToLowerInvariant()));
-
-            return partialMatch;
         }
 
         private ControllerSupportLevel DetectControllerSupport(Game game)
