@@ -68,10 +68,6 @@ namespace ControllerCompatibility
                 }
             }
 
-            // Debug logging
-            System.IO.File.AppendAllText(@"C:\Temp\detection_debug.txt",
-                $"{DateTime.Now}: Game '{game.Name}' - Engine: {supportLevel} (conf: {confidence}) - Dir: '{game.InstallDirectory}'\r\n");
-
             return new DetectionResult(supportLevel, confidence, "Game Engine Analysis");
         }
 
@@ -364,10 +360,9 @@ namespace ControllerCompatibility
                     return new DirectoryAnalysisResult(ControllerSupportLevel.Partial, 0.4);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                System.IO.File.AppendAllText(@"C:\Temp\detection_debug.txt",
-                    $"{DateTime.Now}: Directory analysis error for '{installPath}': {ex.Message}\r\n");
+                // Directory analysis is best-effort; ignore and fall through to other detection methods
             }
 
             return null;

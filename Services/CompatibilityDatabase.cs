@@ -72,6 +72,17 @@ namespace ControllerCompatibility
                 return info;
             }
 
+            // Legacy compatibility.json entries may still be keyed by source/gameId or name.
+            // Prefer matching by stable Playnite GUID stored in GameId to avoid key drift.
+            var idMatch = gameCompatibility.Values.FirstOrDefault(i =>
+                string.Equals(i.GameId, game.Id.ToString(), StringComparison.OrdinalIgnoreCase));
+            if (idMatch != null)
+            {
+                gameCompatibility[key] = idMatch;
+                SaveDatabase();
+                return idMatch;
+            }
+
             // Try to match by name or alternative names
             var matchedInfo = FindCompatibilityByName(game);
             if (matchedInfo != null)
@@ -102,6 +113,17 @@ namespace ControllerCompatibility
                 Source = source
             };
 
+            // Remove any legacy-key entries that belong to this same Playnite game.
+            var legacyKeys = gameCompatibility
+                .Where(kvp => kvp.Key != key && string.Equals(kvp.Value.GameId, info.GameId, StringComparison.OrdinalIgnoreCase))
+                .Select(kvp => kvp.Key)
+                .ToList();
+
+            foreach (var legacyKey in legacyKeys)
+            {
+                gameCompatibility.Remove(legacyKey);
+            }
+
             gameCompatibility[key] = info;
             SaveDatabase();
         }
@@ -125,13 +147,8 @@ namespace ControllerCompatibility
 
         private string GenerateGameKey(Game game)
         {
-            // Use multiple identifiers to create a unique key
-            if (!string.IsNullOrEmpty(game.GameId))
-            {
-                return $"{game.Source?.Name}_{game.GameId}".ToLowerInvariant();
-            }
-            
-            return game.Name.ToLowerInvariant().Replace(" ", "_");
+            // Use Playnite GUID because it's stable within the library and avoids source/name key drift.
+            return game.Id.ToString();
         }
 
         private GameCompatibilityInfo FindCompatibilityByName(Game game)

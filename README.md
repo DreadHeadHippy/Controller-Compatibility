@@ -1,4 +1,4 @@
-# Playnite Controller Compatibility Plugin (v1.0.4)
+# Playnite Controller Compatibility Plugin (v1.0.5)
 
 ![Release](https://img.shields.io/github/v/release/DreadHeadHippy/Controller-Compatibility)
 ![Status](https://img.shields.io/badge/status-actively%20maintained-brightgreen)
@@ -24,9 +24,10 @@
 A Playnite plugin that provides controller compatibility detection and management, similar to Steam's controller compatibility system.
 
 
-## What's New in v1.0.4
-- Fixed game tile overlays not populating automatically after the v1.0.3 fix - the plugin now correctly reads the Game from Playnite's tile DataContext wrapper instead of only accepting a raw Game object
-- Removed a loose name-matching fallback in the compatibility database that could return another game's data
+## What's New in v1.0.5
+- Fixed game tile overlays randomly flipping to the wrong compatibility color while scrolling through the game grid
+- Overlay updates are now event-driven, synchronized with Playnite's own tile virtualization instead of a periodic scan
+- Compatibility data is now keyed by the game's stable Playnite GUID, preventing conflicting stored values for the same game
 
 
 > **Theme Compatibility:**

@@ -1,3 +1,11 @@
+## [1.0.5] - 2026-09-11
+
+### Fixed
+- Game tile overlays no longer randomly flip to the wrong compatibility color while scrolling through the game grid
+- Replaced the periodic visual-tree scan (which raced against Playnite's container virtualization/recycling) with an event-driven approach that updates a tile's overlay synchronously the instant its bound game changes
+- Compatibility database entries are now keyed by the game's stable Playnite GUID instead of a source/name-derived key, preventing the same game from resolving to conflicting stored values
+- Game tile overlay badges now use the original controller icon instead of a single letter
+
 ## [1.0.4] - 2026-09-11
 
 ### Fixed

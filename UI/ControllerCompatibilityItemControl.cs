@@ -19,8 +19,7 @@ namespace ControllerCompatibility
 
         public ControllerCompatibilityItemControl(ControllerCompatibilityPlugin plugin)
         {
-            System.Diagnostics.Debug.WriteLine("=== CONTROLLER COMPATIBILITY ITEM CONTROL CREATED ===");
-            Console.WriteLine("=== CONTROLLER COMPATIBILITY ITEM CONTROL CREATED ===");
+            logger.Info("=== CONTROLLER COMPATIBILITY ITEM CONTROL CREATED ===");
 
             this.plugin = plugin;
             plugin.CompatibilityChanged += OnCompatibilityChanged;
@@ -96,27 +95,22 @@ namespace ControllerCompatibility
 
         private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine($"=== DATACONTEXT CHANGED: Old={e.OldValue?.GetType().Name}, New={e.NewValue?.GetType().Name} ===");
-            Console.WriteLine($"=== DATACONTEXT CHANGED: Old={e.OldValue?.GetType().Name}, New={e.NewValue?.GetType().Name} ===");
-
             var game = ExtractGame(e.NewValue);
+            logger.Info($"=== DATACONTEXT CHANGED: New={e.NewValue?.GetType().FullName ?? "null"}, ExtractedGame={game?.Name ?? "null"} ===");
+
             if (game != null)
             {
-                System.Diagnostics.Debug.WriteLine($"=== BINDING TO GAME: {game.Name} ===");
-                Console.WriteLine($"=== BINDING TO GAME: {game.Name} ===");
                 currentGame = game;
                 UpdateCompatibilityOverlay(game);
             }
             else
             {
-                System.Diagnostics.Debug.WriteLine("=== NOT A GAME OBJECT ===");
-                Console.WriteLine("=== NOT A GAME OBJECT ===");
                 currentGame = null;
             }
         }
 
         // Grid/theme tile DataContext is often a Playnite-internal wrapper (e.g. GamesCollectionViewEntry)
-        // rather than a raw Game, so fall back to reading its "Game" property via reflection.
+        // rather than a raw Game, so fall back to reflecting any property that holds a Game.
         private static Game ExtractGame(object dataContext)
         {
             if (dataContext is Game directGame)
@@ -124,7 +118,25 @@ namespace ControllerCompatibility
                 return directGame;
             }
 
-            return dataContext?.GetType().GetProperty("Game")?.GetValue(dataContext) as Game;
+            if (dataContext == null)
+            {
+                return null;
+            }
+
+            var dataContextType = dataContext.GetType();
+            if (!string.Equals(dataContextType.Name, "GamesCollectionViewEntry", StringComparison.Ordinal))
+            {
+                return null;
+            }
+
+            // Only use explicit Playnite item wrapper property.
+            var gameProperty = dataContextType.GetProperty("Game");
+            if (gameProperty != null && typeof(Game).IsAssignableFrom(gameProperty.PropertyType))
+            {
+                return gameProperty.GetValue(dataContext) as Game;
+            }
+
+            return null;
         }
 
         private void UpdateCompatibilityOverlay(Game game)
