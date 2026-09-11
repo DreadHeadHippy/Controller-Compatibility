@@ -5,8 +5,8 @@
     <LangVersion>8.0</LangVersion>
     <AssemblyTitle>Controller Compatibility Plugin</AssemblyTitle>
     <Product>Controller Compatibility Plugin</Product>
-    <AssemblyVersion>1.0.3.0</AssemblyVersion>
-    <FileVersion>1.0.3.0</FileVersion>
+    <AssemblyVersion>1.0.4.0</AssemblyVersion>
+    <FileVersion>1.0.4.0</FileVersion>
     <OutputType>Library</OutputType>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <UseWPF>true</UseWPF>

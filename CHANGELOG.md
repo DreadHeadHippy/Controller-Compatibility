@@ -1,3 +1,8 @@
+## [1.0.4] - 2026-09-11
+
+### Fixed
+- Game tile overlays now populate automatically again; the tile control reads the Game from Playnite's actual tile DataContext wrapper (e.g. GamesCollectionViewEntry) instead of only accepting a raw Game object, which never matched in real grid/theme tiles
+
 ## [1.0.3] - 2026-09-11
 
 ### Fixed

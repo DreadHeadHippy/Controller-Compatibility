@@ -99,7 +99,8 @@ namespace ControllerCompatibility
             System.Diagnostics.Debug.WriteLine($"=== DATACONTEXT CHANGED: Old={e.OldValue?.GetType().Name}, New={e.NewValue?.GetType().Name} ===");
             Console.WriteLine($"=== DATACONTEXT CHANGED: Old={e.OldValue?.GetType().Name}, New={e.NewValue?.GetType().Name} ===");
 
-            if (e.NewValue is Game game)
+            var game = ExtractGame(e.NewValue);
+            if (game != null)
             {
                 System.Diagnostics.Debug.WriteLine($"=== BINDING TO GAME: {game.Name} ===");
                 Console.WriteLine($"=== BINDING TO GAME: {game.Name} ===");
@@ -112,6 +113,18 @@ namespace ControllerCompatibility
                 Console.WriteLine("=== NOT A GAME OBJECT ===");
                 currentGame = null;
             }
+        }
+
+        // Grid/theme tile DataContext is often a Playnite-internal wrapper (e.g. GamesCollectionViewEntry)
+        // rather than a raw Game, so fall back to reading its "Game" property via reflection.
+        private static Game ExtractGame(object dataContext)
+        {
+            if (dataContext is Game directGame)
+            {
+                return directGame;
+            }
+
+            return dataContext?.GetType().GetProperty("Game")?.GetValue(dataContext) as Game;
         }
 
         private void UpdateCompatibilityOverlay(Game game)
